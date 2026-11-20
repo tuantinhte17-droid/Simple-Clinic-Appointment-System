@@ -3,7 +3,7 @@ from flask import Flask, jsonify
 from .extensions import socket_io
 from flask_cors import CORS
 from dotenv import load_dotenv
-from .database import close_db, init_db, seed_db, get_db_path
+from .database import close_db, init_db, seed_db, get_db_path, is_postgres
 from .routes import api_bp
 
 load_dotenv()
@@ -71,15 +71,16 @@ def create_app(test_config=None):
             }
         }), 500
 
-    # Auto-initialize DB if not yet created
+    # Auto-initialize DB if not yet created (SQLite only; PostgreSQL should be migrated/initialized explicitly)
     with app.app_context():
-        db_path = get_db_path()
-        if not os.path.exists(db_path):
-            try:
-                init_db(db_path)
-                seed_db(db_path)
-            except Exception as ex:
-                print(f"[create_app] Database initialization notice: {ex}")
+        if not is_postgres():
+            db_path = get_db_path()
+            if not os.path.exists(db_path):
+                try:
+                    init_db(db_path)
+                    seed_db(db_path)
+                except Exception as ex:
+                    print(f"[create_app] Database initialization notice: {ex}")
 
     socket_io.init_app(app)
 
