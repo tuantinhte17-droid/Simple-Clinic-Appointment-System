@@ -17,3 +17,4 @@ if __name__ == '__main__':
     print(f" API Health check: http://localhost:{port}/api/health")
     print("==================================================")
     socket_io.run(app, host=host, port=port, debug=debug, use_reloader=False)
+

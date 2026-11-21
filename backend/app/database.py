@@ -57,13 +57,23 @@ def query_db(query, args=(), one=False):
         cur.execute(pg_query, args)
         rv = cur.fetchall()
         cur.close()
-        results = [dict(r) for r in rv]
-        return (results[0] if results else None) if one else results
 
-    cur = db.execute(query, args)
-    rv = cur.fetchall()
-    cur.close()
-    return (dict(rv[0]) if rv else None) if one else [dict(r) for r in rv]
+        import datetime
+        results = []
+        for r in rv:
+            row_dict = {}
+            for k, v in dict(r).items():
+                if isinstance(v, (datetime.date, datetime.datetime)):
+                    row_dict[k] = v.isoformat()
+                else:
+                    row_dict[k] = v
+            results.append(row_dict)
+        return (results[0] if results else None) if one else results 
+    else :
+        cur = db.execute(query, args)
+        rv = cur.fetchall()
+        cur.close()
+        return (dict(rv[0]) if rv else None) if one else [dict(r) for r in rv]
 
 def execute_db(query, args=(), commit=True):
     db = get_db()
